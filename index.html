@@ -20,302 +20,290 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Hind Siliguri', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px; padding-bottom: 120px; }
         .container { max-width: 600px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 30px; }
-        h1 { font-size: 1.5rem; color: var(--accent-primary); }
+        
+        /* Dashboard */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 16px; position: relative; overflow: hidden; }
+        .card.full { grid-column: span 2; border-left: 4px solid var(--accent-primary); }
+        .card h3 { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        .card .amount { font-size: 1.4rem; font-weight: 700; margin-top: 5px; }
+        
+        /* Private Section */
+        .private-blur { filter: blur(10px); pointer-events: none; }
+        .vault-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.9); z-index: 5; border-radius: 16px; cursor: pointer; }
 
-        /* Summary Cards */
-        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .card.full-width { grid-column: span 2; border-bottom: 3px solid var(--accent-primary); }
-        .card h3 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-        .card .amount { font-size: 1.3rem; font-weight: 700; }
-        .income-text { color: var(--accent-success); }
-        .expense-text { color: var(--accent-danger); }
-
-        /* Voice Status */
-        .voice-status { text-align: center; margin-bottom: 20px; min-height: 40px; }
-        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #64748b; margin-right: 8px; }
+        /* Voice Status & Review Area */
+        .voice-box { background: rgba(56, 189, 248, 0.05); padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 20px; border: 1px solid #1e293b; }
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #64748b; margin-right: 5px; }
         .status-dot.active { background: #ef4444; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        .transcript-preview { font-style: italic; font-size: 0.9rem; color: var(--accent-primary); margin-top: 5px; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+
+        /* Review Card (Critical Requirement) */
+        #reviewContainer { display: none; background: #1e293b; border: 1px solid var(--accent-primary); padding: 15px; border-radius: 16px; margin-bottom: 20px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .review-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; }
+        .btn-confirm { background: var(--accent-success); color: #064e3b; width: 100%; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { background: none; color: var(--accent-danger); border: none; font-size: 0.8rem; cursor: pointer; margin-top: 5px; }
 
         /* Lists */
-        .section-title { margin: 20px 0 10px; font-size: 1.1rem; display: flex; justify-content: space-between; align-items: center; }
-        .transaction-list { list-style: none; }
-        .transaction-item { background: var(--card-bg); margin-bottom: 10px; padding: 12px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .item-info div:first-child { font-weight: 600; }
-        .item-info div:last-child { font-size: 0.75rem; color: var(--text-muted); }
-        .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid var(--accent-danger); color: var(--accent-danger); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+        .transaction-list { list-style: none; margin-top: 10px; }
+        .item { background: var(--card-bg); padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid transparent; }
+        .item.expense { border-left-color: var(--accent-danger); }
+        .item.income { border-left-color: var(--accent-success); }
+        .btn-del { background: none; border: 1px solid #334155; color: #888; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
 
-        /* Controls */
-        .controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; width: 95%; max-width: 500px; z-index: 100; }
-        .btn { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; }
-        .btn-primary { background: var(--accent-primary); color: #000; }
+        /* Navigation */
+        .nav-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 500px; display: flex; gap: 10px; z-index: 100; }
+        .btn { flex: 1; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-main { background: var(--accent-primary); color: #000; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); }
         .btn-stop { background: var(--accent-danger); color: white; display: none; }
-        .btn-secondary { background: #334155; color: white; }
-        .btn-danger-all { background: #450a0a; color: #f87171; border: 1px solid #f87171; width: 100%; margin-top: 20px; padding: 12px; }
+        .btn-sec { background: #334155; color: white; }
 
-        /* Report View */
-        #reportOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 1000; padding: 20px; display: none; overflow-y: auto; }
-        .chart-container { margin-top: 20px; background: var(--card-bg); padding: 15px; border-radius: 16px; }
+        .overlay { position: fixed; inset: 0; background: var(--bg-color); z-index: 1000; padding: 20px; display: none; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <header>
-        <h1>Smart Finance Voice Pro</h1>
-    </header>
-
-    <div class="voice-status">
-        <div><span id="statusDot" class="status-dot"></span> <span id="statusLabel">মাইক্রোফোন বন্ধ</span></div>
-        <div id="liveTranscript" class="transcript-preview"></div>
+    <div class="header">
+        <h2>Smart Finance <span style="color:var(--accent-primary)">Pro</span></h2>
+        <button onclick="lockVault()" style="background:none; border:1px solid #334155; color:var(--text-muted); padding:5px 10px; border-radius:8px;">🔒 লক করুন</button>
     </div>
 
     <div class="summary-grid">
-        <div class="card full-width">
-            <h3>মোট ব্যালেন্স</h3>
-            <div id="sum-net" class="amount">৳ 0</div>
-        </div>
-        <div class="card">
-            <h3>আজকের আয়</h3>
-            <div id="sum-income" class="amount income-text">৳ 0</div>
+        <div class="card full">
+            <div id="vaultOverlay" class="vault-lock" onclick="unlockVault()"><span>🔓 পাসওয়ার্ড দিয়ে সঞ্চয় দেখুন</span></div>
+            <div id="vaultContent" class="private-blur">
+                <h3>মোট সঞ্চয়</h3>
+                <div id="sum-net" class="amount" style="color:var(--accent-success)">৳ 0</div>
+                <div style="display:flex; gap:20px; margin-top:10px;">
+                    <div><small>মোট আয়</small><br><b id="sum-total-inc">৳ 0</b></div>
+                    <div><small>মোট খরচ</small><br><b id="sum-total-exp">৳ 0</b></div>
+                </div>
+            </div>
         </div>
         <div class="card">
             <h3>আজকের খরচ</h3>
-            <div id="sum-today" class="amount expense-text">৳ 0</div>
+            <div id="sum-today-exp" class="amount" style="color:var(--accent-danger)">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>এই মাসের খরচ</h3>
+            <div id="sum-month-exp" class="amount">৳ 0</div>
         </div>
     </div>
 
-    <div class="section-title">
-        <span>সাম্প্রতিক লেনদেন</span>
-        <button onclick="toggleReports(true)" style="background:none; border:none; color:var(--accent-primary); cursor:pointer;">বিস্তারিত</button>
+    <div class="voice-box">
+        <div><span id="dot" class="status-dot"></span> <span id="statusText">মাইক্রোফোন বন্ধ</span></div>
+        <div id="livePreview" style="font-size: 0.9rem; color: var(--accent-primary); min-height: 25px; margin-top: 8px; font-weight: 600;"></div>
     </div>
 
+    <div id="reviewContainer">
+        <h4 style="margin-bottom:10px; color: var(--accent-success);">লেনদেন নিশ্চিত করুন:</h4>
+        <div id="reviewList"></div>
+        <button class="btn-confirm" onclick="confirmAndSave()">✅ এন্ট্রি নিশ্চিত করুন</button>
+        <button class="btn-cancel" onclick="cancelReview()">বাতিল করুন</button>
+    </div>
+
+    <h3>সাম্প্রতিক লেনদেন</h3>
     <ul id="recentList" class="transaction-list"></ul>
 </div>
 
-<div id="reportOverlay">
-    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>বিস্তারিত রিপোর্ট</h2>
-        <button class="btn btn-secondary" onclick="toggleReports(false)" style="flex:none; padding: 8px 15px;">বন্ধ করুন</button>
+<div id="reportOverlay" class="overlay">
+    <div style="display:flex; justify-content: space-between; align-items:center;">
+        <h3>মাসিক ও বাৎসরিক রিপোর্ট</h3>
+        <button onclick="closeReports()" class="btn-sec" style="padding:5px 15px; border-radius:8px;">বন্ধ করুন</button>
     </div>
-    
-    <div class="chart-container">
-        <canvas id="mainChart"></canvas>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin:20px 0;">
+        <div style="background:#1e293b; padding:15px; border-radius:12px;">
+            <small>এই মাস</small><br><b id="rep-month" style="font-size:1.2rem;">৳ 0</b>
+        </div>
+        <div style="background:#1e293b; padding:15px; border-radius:12px;">
+            <small>এই বছর</small><br><b id="rep-year" style="font-size:1.2rem;">৳ 0</b>
+        </div>
     </div>
-
-    <h3 style="margin:20px 0 10px;">লেনদেনের ইতিহাস</h3>
-    <ul id="fullList" class="transaction-list"></ul>
-
-    <button class="btn btn-danger-all" onclick="clearAllData()">🗑️ সকল ডাটা মুছে ফেলুন (পাসওয়ার্ড লাগবে)</button>
-    
-    <div style="margin: 30px 0; text-align: center;">
-        <button onclick="changePassword()" style="color:var(--text-muted); background:none; border:none; text-decoration: underline;">পাসওয়ার্ড পরিবর্তন করুন</button>
-    </div>
+    <canvas id="reportChart" style="background:#1e293b; border-radius:12px; padding:10px;"></canvas>
+    <ul id="fullList" class="transaction-list" style="margin-top:20px;"></ul>
 </div>
 
-<div class="controls">
-    <button id="btnStart" class="btn btn-primary" onclick="startListening()">🎤 বলা শুরু করুন</button>
-    <button id="btnStop" class="btn btn-stop" onclick="stopListening()">🛑 বন্ধ করুন</button>
-    <button class="btn btn-secondary" onclick="toggleReports(true)">📊 রিপোর্ট</button>
+<div class="nav-bar">
+    <button id="btnStart" class="btn btn-main" onclick="startRecognition()">🎤 বলা শুরু করুন</button>
+    <button id="btnStop" class="btn btn-stop" onclick="stopRecognition()">🛑 থামুন</button>
+    <button class="btn btn-sec" onclick="openReports()">📊 রিপোর্ট</button>
 </div>
 
 <script>
-    let transactions = JSON.parse(localStorage.getItem('sfvp_data')) || [];
-    let appPassword = localStorage.getItem('sfvp_pass') || '1234';
-    
-    // Voice Duplicate Prevention
-    let lastProcessedText = "";
-    let lastProcessedTime = 0;
+    let transactions = JSON.parse(localStorage.getItem('sf_pro_v3_data')) || [];
+    let passCode = localStorage.getItem('sf_pro_pass') || '1234';
+    let pendingEntries = []; // Temporary storage for review
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    let isListening = false;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous = true;
+    recognition.lang = 'bn-BD';
+    recognition.interimResults = true;
 
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.lang = 'bn-BD';
-        recognition.interimResults = true;
-
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                const transcript = event.results[i][0].transcript.trim();
-                if (event.results[i].isFinal) {
-                    // Duplicate prevention logic (debounce 1.5s and text match)
-                    const now = Date.now();
-                    if (transcript !== lastProcessedText || (now - lastProcessedTime > 1500)) {
-                        processVoiceCommand(transcript);
-                        lastProcessedText = transcript;
-                        lastProcessedTime = now;
-                    }
-                } else {
-                    interimTranscript += transcript;
-                }
+    recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const text = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                prepareForReview(text);
+            } else {
+                interim = text;
             }
-            document.getElementById('liveTranscript').innerText = interimTranscript;
-        };
-
-        recognition.onend = () => { if (isListening) recognition.start(); };
-    }
-
-    const bn2en = (str) => {
-        const digits = {'০':0,'১':1,'২':2,'৩':3,'৪':4,'৫':5,'৬':6,'৭':7,'৮':8,'৯':9};
-        return str.replace(/[০-৯]/g, d => digits[d]);
+        }
+        document.getElementById('livePreview').innerText = interim;
     };
 
-    function processVoiceCommand(text) {
-        const normalized = bn2en(text);
-        
-        // Command Actions
-        if (text.includes("রিপোর্ট") || text.includes("সব দেখাও")) {
-            toggleReports(true); return;
-        }
+    function prepareForReview(input) {
+        // Convert Bangla digits to English
+        const text = input.replace(/[০-৯]/g, d => "০১২৩৪৫৬৭৮৯".indexOf(d));
+        const segments = text.split(/(এবং|আর|,)/);
+        let detectedItems = [];
 
-        // Split by markers to handle multiple entries in one go
-        const segments = normalized.split(/(এবং|আর|,)/);
-        
-        segments.forEach(seg => {
-            const amountMatch = seg.match(/\d+/);
-            if (amountMatch) {
-                const amount = parseInt(amountMatch[0]);
-                const type = (normalized.includes("ইনকাম") || normalized.includes("আয়")) ? 'income' : 'expense';
-                let category = seg.replace(/\d+/g, '').replace(/টাকা|ইনকাম|আয়/g, '').trim();
-                if (!category) category = (type === 'income' ? "আয়" : "খরচ");
-                
-                saveTransaction(type, amount, category);
+        segments.forEach(s => {
+            const match = s.match(/\d+/);
+            if (match) {
+                const amount = parseInt(match[0]);
+                const type = (text.includes("ইনকাম") || text.includes("আয়")) ? 'income' : 'expense';
+                let cat = s.replace(/\d+/g, '').replace(/টাকা|ইনকাম|আয়/g, '').trim() || (type === 'income' ? 'আয়' : 'খরচ');
+                detectedItems.push({ type, amount, cat });
             }
         });
-    }
 
-    function saveTransaction(type, amount, category) {
-        const now = new Date();
-        const entry = {
-            id: Date.now() + Math.random(),
-            type, amount, category,
-            date: now.toISOString(),
-            weekNumber: getWeekNumber(now),
-            month: now.getMonth(),
-            year: now.getFullYear()
-        };
-        transactions.unshift(entry);
-        syncData();
-    }
-
-    function deleteTransaction(id) {
-        if (confirm("এটি মুছে ফেলতে চান?")) {
-            const pass = prompt("পাসওয়ার্ড দিন:");
-            if (pass === appPassword) {
-                transactions = transactions.filter(t => t.id !== id);
-                syncData();
-            } else { alert("ভুল পাসওয়ার্ড!"); }
+        if (detectedItems.length > 0) {
+            pendingEntries = detectedItems;
+            showReviewCard();
         }
     }
 
-    function clearAllData() {
-        const pass = prompt("সব ডাটা মুছতে পাসওয়ার্ড দিন:");
-        if (pass === appPassword) {
-            if(confirm("আপনি কি নিশ্চিত? সব হিসাব চিরতরে মুছে যাবে!")) {
-                transactions = [];
-                syncData();
-                alert("সব মুছে ফেলা হয়েছে।");
-                toggleReports(false);
-            }
+    function showReviewCard() {
+        const listEl = document.getElementById('reviewList');
+        listEl.innerHTML = pendingEntries.map(item => `
+            <div class="review-item">
+                <span><b>${item.cat}</b> (${item.type === 'income' ? 'আয়' : 'ব্যয়'})</span>
+                <span style="color:var(--accent-primary)">৳ ${item.amount}</span>
+            </div>
+        `).join('');
+        document.getElementById('reviewContainer').style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function confirmAndSave() {
+        const now = new Date();
+        pendingEntries.forEach(item => {
+            transactions.unshift({
+                id: Date.now() + Math.random(),
+                type: item.type,
+                amount: item.amount,
+                category: item.cat,
+                date: now.toISOString(),
+                month: now.getMonth(),
+                year: now.getFullYear()
+            });
+        });
+        localStorage.setItem('sf_pro_v3_data', JSON.stringify(transactions));
+        cancelReview();
+        render();
+        alert("সফলভাবে সেভ করা হয়েছে!");
+    }
+
+    function cancelReview() {
+        pendingEntries = [];
+        document.getElementById('reviewContainer').style.display = 'none';
+        document.getElementById('livePreview').innerText = "";
+    }
+
+    // Security & Data
+    function unlockVault() {
+        if (prompt("পাসওয়ার্ড দিন:") === passCode) {
+            document.getElementById('vaultOverlay').style.display = 'none';
+            document.getElementById('vaultContent').classList.remove('private-blur');
         } else { alert("ভুল পাসওয়ার্ড!"); }
     }
-
-    function syncData() {
-        localStorage.setItem('sfvp_data', JSON.stringify(transactions));
-        updateUI();
+    function lockVault() {
+        document.getElementById('vaultOverlay').style.display = 'flex';
+        document.getElementById('vaultContent').classList.add('private-blur');
     }
 
-    function updateUI() {
-        const todayInc = calculate('income', 'today');
-        const todayExp = calculate('expense', 'today');
-        const totalInc = calculate('income', 'all');
-        const totalExp = calculate('expense', 'all');
-
-        document.getElementById('sum-income').innerText = `৳ ${todayInc}`;
-        document.getElementById('sum-today').innerText = `৳ ${todayExp}`;
-        document.getElementById('sum-net').innerText = `৳ ${totalInc - totalExp}`;
-
-        renderList(transactions.slice(0, 5), 'recentList');
-        renderList(transactions, 'fullList');
-        updateChart(totalInc, totalExp);
-    }
-
-    function calculate(type, range) {
+    function calculate(type, period) {
         const now = new Date();
         return transactions.filter(t => {
-            if (t.type !== type) return false;
-            if (range === 'today') return new Date(t.date).toDateString() === now.toDateString();
+            if (type !== 'all' && t.type !== type) return false;
+            const d = new Date(t.date);
+            if (period === 'today') return d.toDateString() === now.toDateString();
+            if (period === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            if (period === 'year') return d.getFullYear() === now.getFullYear();
             return true;
-        }).reduce((s, t) => s + t.amount, 0);
+        }).reduce((sum, t) => sum + (t.type === 'expense' && type === 'all' ? -t.amount : t.amount), 0);
     }
 
-    function renderList(data, elId) {
-        const el = document.getElementById(elId);
-        el.innerHTML = data.map(t => `
-            <li class="transaction-item">
-                <div class="item-info">
-                    <div style="color:${t.type==='income'?'var(--accent-success)':'white'}">${t.category}: ৳ ${t.amount}</div>
-                    <div>${new Date(t.date).toLocaleDateString('bn-BD')}</div>
-                </div>
-                <button class="btn-delete" onclick="deleteTransaction(${t.id})">মুছুন</button>
+    function render() {
+        const totalInc = calculate('income', 'all');
+        const totalExp = calculate('expense', 'all');
+        
+        document.getElementById('sum-net').innerText = `৳ ${totalInc - totalExp}`;
+        document.getElementById('sum-total-inc').innerText = `৳ ${totalInc}`;
+        document.getElementById('sum-total-exp').innerText = `৳ ${totalExp}`;
+        document.getElementById('sum-today-exp').innerText = `৳ ${calculate('expense', 'today')}`;
+        document.getElementById('sum-month-exp').innerText = `৳ ${calculate('expense', 'month')}`;
+        
+        document.getElementById('rep-month').innerText = `৳ ${calculate('expense', 'month')}`;
+        document.getElementById('rep-year').innerText = `৳ ${calculate('expense', 'year')}`;
+
+        const html = transactions.slice(0, 5).map(t => `
+            <li class="item ${t.type}">
+                <div><b>${t.category}</b><br><small>${new Date(t.date).toLocaleDateString('bn-BD')}</small></div>
+                <div style="font-weight:bold;">৳ ${t.amount}</div>
             </li>
         `).join('');
+        document.getElementById('recentList').innerHTML = html || '<p style="text-align:center; color:#444;">কোন এন্ট্রি নেই</p>';
     }
 
-    let myChart;
-    function updateChart(inc, exp) {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
+    // Recognition Controls
+    function startRecognition() {
+        recognition.start();
+        document.getElementById('btnStart').style.display = 'none';
+        document.getElementById('btnStop').style.display = 'flex';
+        document.getElementById('dot').classList.add('active');
+        document.getElementById('statusText').innerText = "শুনছি...";
+    }
+    function stopRecognition() {
+        recognition.stop();
+        document.getElementById('btnStart').style.display = 'flex';
+        document.getElementById('btnStop').style.display = 'none';
+        document.getElementById('dot').classList.remove('active');
+        document.getElementById('statusText').innerText = "বন্ধ";
+    }
+
+    function openReports() { 
+        document.getElementById('reportOverlay').style.display = 'block';
+        updateChart();
+        const fullHtml = transactions.map(t => `
+            <li class="item ${t.type}">
+                <div><b>${t.category}</b> (${t.type === 'income' ? 'আয়' : 'ব্যয়'})</div>
+                <span>৳ ${t.amount}</span>
+            </li>
+        `).join('');
+        document.getElementById('fullList').innerHTML = fullHtml;
+    }
+    function closeReports() { document.getElementById('reportOverlay').style.display = 'none'; }
+
+    let chart;
+    function updateChart() {
+        const ctx = document.getElementById('reportChart').getContext('2d');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['আয়', 'খরচ'],
-                datasets: [{ data: [inc, exp], backgroundColor: ['#4ade80', '#f87171'], borderWidth: 0 }]
+                labels: ['আয়', 'ব্যয়'],
+                datasets: [{ data: [calculate('income','all'), calculate('expense','all')], backgroundColor: ['#4ade80', '#f87171'] }]
             },
-            options: { plugins: { legend: { labels: { color: '#fff' } } } }
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
-    function startListening() {
-        isListening = true; recognition.start();
-        document.getElementById('btnStart').style.display = 'none';
-        document.getElementById('btnStop').style.display = 'flex';
-        document.getElementById('statusDot').classList.add('active');
-        document.getElementById('statusLabel').innerText = "শুনছি...";
-    }
-
-    function stopListening() {
-        isListening = false; recognition.stop();
-        document.getElementById('btnStart').style.display = 'flex';
-        document.getElementById('btnStop').style.display = 'none';
-        document.getElementById('statusDot').classList.remove('active');
-        document.getElementById('statusLabel').innerText = "মাইক্রোফোন বন্ধ";
-    }
-
-    function toggleReports(show) {
-        document.getElementById('reportOverlay').style.display = show ? 'block' : 'none';
-    }
-
-    function changePassword() {
-        if (prompt("বর্তমান পাসওয়ার্ড?") === appPassword) {
-            const np = prompt("নতুন পাসওয়ার্ড?");
-            if (np) { appPassword = np; localStorage.setItem('sfvp_pass', np); alert("সফল!"); }
-        } else alert("ভুল!");
-    }
-
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-        return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
-    }
-
-    updateUI();
+    render();
 </script>
 </body>
 </html>
