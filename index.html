@@ -3,202 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voice Expense Tracker</title>
+<title>Smart Expense Pro</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #111827;
-  color: white;
-  text-align: center;
+body{
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
 }
-
-.container {
-  padding: 15px;
-  max-width: 600px;
-  margin: auto;
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:15px;
 }
-
-button {
-  padding: 12px;
-  margin: 5px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  width: 100%;
+h2{
+  text-align:center;
 }
-
-.primary { background: #2563eb; color: white; }
-.danger { background: #dc2626; color: white; }
-
-.card {
-  background: #1f2937;
-  padding: 15px;
-  margin-top: 15px;
-  border-radius: 12px;
+button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:12px;
+  font-size:15px;
+  cursor:pointer;
 }
-
-table {
-  width: 100%;
-  font-size: 14px;
+.primary{background:#3b82f6;color:white;}
+.success{background:#10b981;color:white;}
+.danger{background:#ef4444;color:white;}
+.card{
+  background:#1e293b;
+  padding:15px;
+  margin-top:15px;
+  border-radius:15px;
 }
-
-canvas {
-  max-width: 100%;
-}
+.hidden{display:none;}
+table{width:100%;font-size:14px;}
+th,td{padding:6px;text-align:left;}
 </style>
 </head>
+
 <body>
-
 <div class="container">
-<h2>🎤 Voice Expense Tracker</h2>
 
-<button class="primary" onclick="startListening()">খরচ বলুন</button>
-<button class="primary" onclick="showMonthlyReport()">মাসিক রিপোর্ট</button>
-<button class="danger" onclick="clearAll()">সব ডিলিট</button>
+<h2>💸 Smart Expense Pro</h2>
+
+<button class="primary" onclick="startListening()">🎤 খরচ বলুন</button>
+<button class="success" onclick="toggleIncome()">💰 ইনকাম যোগ</button>
+<button class="primary" onclick="toggleChart()">📊 চার্ট</button>
 
 <h3 id="status"></h3>
 
 <div class="card">
-  <h3>খরচ তালিকা</h3>
-  <table id="expenseTable"></table>
+<h3>সর্বশেষ ৫টি খরচ</h3>
+<table id="expenseTable"></table>
 </div>
 
-<div class="card">
-  <h3>ক্যাটাগরি চার্ট</h3>
-  <canvas id="expenseChart"></canvas>
+<div class="card hidden" id="chartSection">
+<h3>পূর্ণ রিপোর্ট</h3>
+<canvas id="expenseChart"></canvas>
+<p id="yearly"></p>
 </div>
 
 </div>
 
 <script>
 let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+let income = JSON.parse(localStorage.getItem("income")) || [];
 let chart;
+const deletePassword = "1234";
 
-function saveData() {
-  localStorage.setItem("expenses", JSON.stringify(expenses));
+function saveData(){
+  localStorage.setItem("expenses",JSON.stringify(expenses));
+  localStorage.setItem("income",JSON.stringify(income));
 }
 
-function startListening() {
-  if (!('webkitSpeechRecognition' in window)) {
-    alert("এই ব্রাউজারে ভয়েস সাপোর্ট নেই। Chrome ব্যবহার করুন।");
+function startListening(){
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    alert("Chrome ব্যবহার করুন");
     return;
   }
-
-  const recognition = new webkitSpeechRecognition();
-  recognition.lang = "bn-BD";
+  const recognition = new SpeechRecognition();
+  recognition.lang="bn-BD";
   recognition.start();
 
- recognition.onresult = function(event) {
-  let text = event.results[0][0].transcript;
-
-  // 🔥 ডিবাগ: আসল শুনা লেখা দেখাও
-  document.getElementById("status").innerText =
-    "শুনেছি: " + text;
-
-  processExpense(text);
-};
-
-
-  recognition.onerror = function() {
-    alert("মাইক পারমিশন দিন এবং HTTPS ব্যবহার করুন।");
+  recognition.onresult=function(event){
+    let text=event.results[0][0].transcript;
+    processExpense(text);
   };
 }
 
-function processExpense(text) {
-
-  // বাংলা সংখ্যা → ইংরেজি সংখ্যা কনভার্ট
-  const bnToEn = {
-    '০':'0','১':'1','২':'2','৩':'3','৪':'4',
-    '৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
-  };
-
-  text = text.replace(/[০-৯]/g, d => bnToEn[d]);
-
-  let number = text.match(/\d+/);
-
-  if (!number) {
-    document.getElementById("status").innerText =
-      "সংখ্যা বুঝতে পারিনি 😅 (ডিজিটে বলার চেষ্টা করুন)";
+function processExpense(text){
+  const bnToEn={'০':'0','১':'1','২':'2','৩':'3','৪':'4',
+  '৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+  text=text.replace(/[০-৯]/g,d=>bnToEn[d]);
+  let match=text.match(/\d+/);
+  if(!match){
+    document.getElementById("status").innerText="সংখ্যা বুঝতে পারিনি 😅";
     return;
   }
+  let amount=parseInt(match[0]);
+  let category=text.replace(match[0],"").trim();
 
-  let amount = parseInt(number[0]);
-  let category = text.replace(number[0], "").trim();
-
-  expenses.push({
+  expenses.unshift({
     amount,
     category,
-    date: new Date().toISOString()
+    date:new Date().toISOString()
   });
 
   saveData();
   renderTable();
   renderChart();
-
-  document.getElementById("status").innerText =
-    "সেভ হয়েছে: " + category + " - " + amount + " টাকা";
+  document.getElementById("status").innerText=
+  "সেভ হয়েছে: "+category+" - "+amount+" টাকা";
 }
 
-
-function renderTable() {
-  let table = "<tr><th>ক্যাটাগরি</th><th>টাকা</th><th>X</th></tr>";
-  expenses.forEach((item, index) => {
-    table += `
-      <tr>
-        <td>${item.category}</td>
-        <td>${item.amount}</td>
-        <td><button class="danger" onclick="deleteExpense(${index})">X</button></td>
-      </tr>`;
+function renderTable(){
+  let latest=expenses.slice(0,5);
+  let table="<tr><th>ক্যাটাগরি</th><th>টাকা</th><th></th></tr>";
+  latest.forEach((item,index)=>{
+    table+=`
+    <tr>
+    <td>${item.category}</td>
+    <td>${item.amount}</td>
+    <td><button class="danger" onclick="deleteExpense(${index})">X</button></td>
+    </tr>`;
   });
-  document.getElementById("expenseTable").innerHTML = table;
+  document.getElementById("expenseTable").innerHTML=table;
 }
 
-function deleteExpense(index) {
-  expenses.splice(index, 1);
-  saveData();
-  renderTable();
-  renderChart();
+function deleteExpense(index){
+  let pass=prompt("ডিলিট পাসওয়ার্ড দিন:");
+  if(pass===deletePassword){
+    expenses.splice(index,1);
+    saveData();
+    renderTable();
+    renderChart();
+  }else{
+    alert("ভুল পাসওয়ার্ড ❌");
+  }
 }
 
-function clearAll() {
-  expenses = [];
-  saveData();
-  renderTable();
-  renderChart();
+function toggleChart(){
+  let section=document.getElementById("chartSection");
+  section.classList.toggle("hidden");
 }
 
-function showMonthlyReport() {
-  let now = new Date();
-  let total = expenses
-    .filter(e => new Date(e.date).getMonth() === now.getMonth())
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  document.getElementById("status").innerText =
-    "এই মাসের মোট খরচ: " + total + " টাকা";
-}
-
-function renderChart() {
-  let categories = {};
-  expenses.forEach(item => {
-    categories[item.category] =
-      (categories[item.category] || 0) + item.amount;
+function renderChart(){
+  let categories={};
+  expenses.forEach(item=>{
+    categories[item.category]=(categories[item.category]||0)+item.amount;
+  });
+  let labels=Object.keys(categories);
+  let data=Object.values(categories);
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById("expenseChart"),{
+    type:'doughnut',
+    data:{labels:labels,datasets:[{data:data}]}
   });
 
-  let labels = Object.keys(categories);
-  let data = Object.values(categories);
+  let year=new Date().getFullYear();
+  let yearlyTotal=expenses
+    .filter(e=>new Date(e.date).getFullYear()===year)
+    .reduce((sum,i)=>sum+i.amount,0);
 
-  if (chart) chart.destroy();
+  document.getElementById("yearly").innerText=
+  "এই বছরের মোট খরচ: "+yearlyTotal+" টাকা";
+}
 
-  chart = new Chart(document.getElementById("expenseChart"), {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{ data: data }]
-    }
-  });
+function toggleIncome(){
+  let amount=prompt("আজ কত টাকা ইনকাম?");
+  if(amount){
+    income.push({
+      amount:parseInt(amount),
+      date:new Date().toISOString()
+    });
+    saveData();
+    alert("ইনকাম সেভ হয়েছে ✅");
+  }
 }
 
 renderTable();
