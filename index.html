@@ -91,10 +91,16 @@ function startListening() {
   recognition.lang = "bn-BD";
   recognition.start();
 
-  recognition.onresult = function(event) {
-    let text = event.results[0][0].transcript;
-    processExpense(text);
-  };
+ recognition.onresult = function(event) {
+  let text = event.results[0][0].transcript;
+
+  // 🔥 ডিবাগ: আসল শুনা লেখা দেখাও
+  document.getElementById("status").innerText =
+    "শুনেছি: " + text;
+
+  processExpense(text);
+};
+
 
   recognition.onerror = function() {
     alert("মাইক পারমিশন দিন এবং HTTPS ব্যবহার করুন।");
