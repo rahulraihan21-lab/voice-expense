@@ -6,7 +6,6 @@
     <title>Smart Finance Voice Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --bg-color: #020617;
@@ -21,50 +20,28 @@
         body { 
             background: radial-gradient(circle at top right, #1e1b4b, #020617);
             color: var(--text-main); 
-            min-height: 100vh; 
-            padding: 20px; 
-            padding-bottom: 120px; 
+            min-height: 100vh; padding: 20px; padding-bottom: 120px; 
         }
 
         .container { max-width: 500px; margin: 0 auto; }
         .card { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(12px); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 20px; 
-            border-radius: 24px; 
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 20px; border-radius: 24px; margin-bottom: 20px;
         }
 
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .logo { font-size: 1.4rem; font-weight: 700; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .vault-lock { 
-            position: absolute; inset: 0; background: rgba(2, 6, 23, 0.9); 
-            z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            position: absolute; inset: 0; background: rgba(2, 6, 23, 0.9); z-index: 10; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
             border-radius: 24px; cursor: pointer;
         }
         .amount { font-size: 2.2rem; font-weight: 800; }
         .private-blur { filter: blur(15px); }
 
-        .mic-wave { 
-            height: 4px; width: 60px; background: var(--accent-glow); margin: 10px auto; 
-            border-radius: 2px; display: none; box-shadow: 0 0 15px var(--accent-glow);
-        }
-        .mic-wave.active { display: block; animation: wave 1s infinite; }
-        @keyframes wave { 0%, 100% { width: 30px; opacity: 0.5; } 50% { width: 80px; opacity: 1; } }
-
-        #reviewContainer, #manualContainer { 
-            background: #0f172a; border: 2px solid var(--accent-glow); 
-            display: none; padding: 20px; border-radius: 24px; margin-bottom: 20px;
-        }
-
-        input, select {
-            width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
-            color: white; outline: none;
-        }
+        #reviewContainer, #manualContainer { background: #0f172a; border: 2px solid var(--accent-glow); display: none; padding: 20px; border-radius: 24px; margin-bottom: 20px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; }
 
         .btn { flex: 1; padding: 14px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--accent-glow); color: #020617; }
@@ -73,10 +50,12 @@
         .btn-sec { background: #1e293b; color: white; }
 
         .nav-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; display: flex; gap: 10px; z-index: 100; }
-
         .list-item { background: rgba(255,255,255,0.04); padding: 15px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-
         .overlay { position: fixed; inset: 0; background: #020617; z-index: 1000; padding: 25px; display: none; overflow-y: auto; }
+        
+        .mic-wave { height: 4px; width: 60px; background: var(--accent-glow); margin: 10px auto; border-radius: 2px; display: none; box-shadow: 0 0 15px var(--accent-glow); }
+        .mic-wave.active { display: block; animation: wave 1s infinite; }
+        @keyframes wave { 0%, 100% { width: 30px; opacity: 0.5; } 50% { width: 80px; opacity: 1; } }
     </style>
 </head>
 <body>
@@ -84,13 +63,11 @@
 <div class="container">
     <div class="header">
         <div class="logo">SmartFinance Pro</div>
-        <button onclick="lockVault()" style="background:none; border:none; color:var(--accent-glow); font-weight:600;">🔒 লক করুন</button>
+        <button onclick="lockVault()" style="background:none; border:none; color:var(--accent-glow);">🔒 লক</button>
     </div>
 
     <div class="card" style="position:relative; overflow:hidden;">
-        <div id="vaultOverlay" class="vault-lock" onclick="unlockVault()">
-            <p style="font-size: 0.9rem;">🔓 পাসওয়ার্ড দিয়ে সঞ্চয় দেখুন</p>
-        </div>
+        <div id="vaultOverlay" class="vault-lock" onclick="unlockVault()"><p>🔓 পাসওয়ার্ড দিয়ে সঞ্চয় দেখুন</p></div>
         <div id="vaultContent" class="private-blur">
             <h3 style="font-size: 0.8rem; color: var(--accent-glow);">মোট সঞ্চয় (NET)</h3>
             <div id="sum-net" class="amount">৳ 0</div>
@@ -120,14 +97,9 @@
         <h3 style="margin-bottom:10px;">ম্যানুয়াল এন্ট্রি</h3>
         <input type="text" id="manCat" placeholder="খাতের নাম">
         <input type="number" id="manAmt" placeholder="টাকার পরিমাণ">
-        <select id="manType">
-            <option value="expense">খরচ (Expense)</option>
-            <option value="income">আয় (Income)</option>
-        </select>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn btn-primary" onclick="manualSave()">সেভ করুন</button>
-            <button class="btn btn-sec" onclick="toggleManual(false)">বন্ধ</button>
-        </div>
+        <select id="manType"><option value="expense">খরচ</option><option value="income">আয়</option></select>
+        <button class="btn btn-primary" onclick="manualSave()">সেভ করুন</button>
+        <button class="btn btn-sec" style="margin-top:5px; width:100%;" onclick="toggleManual(false)">বন্ধ</button>
     </div>
 
     <h3>সাম্প্রতিক লেনদেন</h3>
@@ -143,12 +115,17 @@
     <canvas id="reportChart" style="margin-bottom:30px;"></canvas>
     <div id="fullHistory"></div>
 
-    <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="exportToCSV()">📂 ফোনে সেভ করুন (CSV)</button>
-    <button class="btn btn-sec" style="width:100%; margin-top:10px; border:1px solid #4285F4;" onclick="googleDriveBackup()">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" width="20" style="margin-right:5px;"> ড্রাইভ ব্যাকআপ নিন
-    </button>
-    
-    <button onclick="clearAllData()" style="width:100%; margin-top:40px; background:none; border:none; color:var(--danger-glow); opacity:0.6;">🗑️ সব ডাটা মুছে ফেলুন</button>
+    <div class="card" style="background:rgba(255,255,255,0.05); margin-top:20px;">
+        <h4 style="margin-bottom:10px;">ব্যাকআপ ও রিস্টোর</h4>
+        <button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="exportJSONBackup()">📤 ব্যাকআপ ফাইল ডাউনলোড করুন</button>
+        
+        <label for="restoreFile" class="btn btn-sec" style="border:1px solid var(--accent-glow);">📥 ডাটা রিস্টোর করুন (JSON)</label>
+        <input type="file" id="restoreFile" accept=".json" style="display:none;" onchange="importJSONBackup(event)">
+        
+        <p style="font-size:0.7rem; color: #94a3b8; margin-top:10px; text-align:center;">*রিস্টোর করলে বর্তমান ডাটা মুছে ব্যাকআপ ফাইলটি লোড হবে।</p>
+    </div>
+
+    <button onclick="clearAllData()" style="width:100%; margin-top:30px; background:none; border:none; color:var(--danger-glow); opacity:0.6;">🗑️ সব ডাটা মুছে ফেলুন</button>
 </div>
 
 <div class="nav-bar">
@@ -165,9 +142,7 @@
 
     // Voice Engine
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.continuous = true;
-    recognition.lang = 'bn-BD';
-    recognition.interimResults = true;
+    recognition.continuous = true; recognition.lang = 'bn-BD'; recognition.interimResults = true;
 
     recognition.onresult = (event) => {
         let interim = "";
@@ -200,21 +175,17 @@
     }
 
     function confirmAndSave() {
-        pendingEntries.forEach(item => {
-            transactions.unshift({ id: Date.now() + Math.random(), ...item, date: new Date().toISOString() });
-        });
-        saveAndReload();
-        cancelReview();
+        pendingEntries.forEach(item => transactions.unshift({ id: Date.now() + Math.random(), ...item, date: new Date().toISOString() }));
+        saveAndReload(); cancelReview();
     }
 
     function manualSave() {
         const cat = document.getElementById('manCat').value;
         const amt = parseInt(document.getElementById('manAmt').value);
         const type = document.getElementById('manType').value;
-        if (!cat || !amt) return alert("ঘরগুলো পূরণ করুন!");
+        if (!cat || !amt) return alert("সব ঘর পূরণ করুন!");
         transactions.unshift({ id: Date.now() + Math.random(), cat, amount: amt, type, date: new Date().toISOString() });
-        saveAndReload();
-        toggleManual(false);
+        saveAndReload(); toggleManual(false);
     }
 
     function saveAndReload() {
@@ -231,40 +202,47 @@
         document.getElementById('recentList').innerHTML = transactions.slice(0, 5).map(t => `
             <div class="list-item">
                 <div><b>${t.cat}</b><br><small style="opacity:0.5">${new Date(t.date).toLocaleDateString('bn-BD')}</small></div>
-                <div style="color:${t.type==='income'?'#22c55e':'#ef4444'}">${t.type==='income'?'+':'-'} ৳ ${t.amount}</div>
+                <div style="color:${t.type==='income'?'#22c55e':'#ef4444'}">৳ ${t.amount}</div>
             </div>
         `).join('') || '<p style="text-align:center; opacity:0.5;">লেনদেন নেই</p>';
     }
 
-    // Google Drive Backup Functionality
-    function googleDriveBackup() {
-        alert("গুগল ড্রাইভ ব্যাকআপের জন্য আপনাকে একটি Client ID সেটআপ করতে হবে। আপাতত আমি আপনার ডাটাটি একটি ফাইল হিসেবে জেনারেট করে ড্রাইভে আপলোড করার প্রসেস শুরু করছি।");
-        
-        // এটি একটি ফাইল ডাউনলোড করে দেবে যা আপনি সরাসরি ড্রাইভে ড্রপ করতে পারবেন।
+    // BACKUP & RESTORE LOGIC
+    function exportJSONBackup() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(transactions));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "SmartFinance_Backup.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        const a = document.createElement('a'); a.href = dataStr; a.download = "Finance_Backup.json";
+        a.click();
     }
 
-    function exportToCSV() {
-        let csv = "তারিখ,খাত,ধরণ,পরিমাণ\n" + transactions.map(t => `${new Date(t.date).toLocaleDateString()},${t.cat},${t.type},${t.amount}`).join("\n");
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'Finance_Report.csv'; a.click();
+    function importJSONBackup(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    if (confirm("আপনি কি নিশ্চিত? এটি আপনার বর্তমান সব ডাটা মুছে ব্যাকআপ ফাইলটি লোড করবে।")) {
+                        transactions = importedData;
+                        saveAndReload();
+                        alert("ডাটা রিস্টোর সফল হয়েছে!");
+                    }
+                } else { alert("ভুল ফাইল ফরম্যাট!"); }
+            } catch (err) { alert("ফাইলটি পড়া যাচ্ছে না!"); }
+        };
+        reader.readAsText(file);
     }
 
-    // Standard Helpers
+    // Helpers
     function unlockVault() { if (prompt("পাসওয়ার্ড?") === passCode) { document.getElementById('vaultOverlay').style.display = 'none'; document.getElementById('vaultContent').classList.remove('private-blur'); } }
     function lockVault() { document.getElementById('vaultOverlay').style.display = 'flex'; document.getElementById('vaultContent').classList.add('private-blur'); }
     function startRecognition() { recognition.start(); document.getElementById('btnStart').style.display = 'none'; document.getElementById('btnStop').style.display = 'flex'; document.getElementById('micWave').classList.add('active'); }
     function stopRecognition() { recognition.stop(); document.getElementById('btnStart').style.display = 'flex'; document.getElementById('btnStop').style.display = 'none'; document.getElementById('micWave').classList.remove('active'); }
     function toggleManual(show) { document.getElementById('manualContainer').style.display = show ? 'block' : 'none'; }
-    function openReports() { document.getElementById('reportOverlay').style.display = 'block'; updateChart(); }
+    function openReports() { document.getElementById('reportOverlay').style.display = 'block'; updateChart(); 
+        document.getElementById('fullHistory').innerHTML = transactions.map(t => `<div class="list-item"><span>${new Date(t.date).toLocaleDateString()} - ${t.cat}</span><b>৳ ${t.amount}</b></div>`).join('');
+    }
     function closeReports() { document.getElementById('reportOverlay').style.display = 'none'; }
     function cancelReview() { document.getElementById('reviewContainer').style.display = 'none'; }
 
