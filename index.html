@@ -102,11 +102,26 @@ function startListening() {
 }
 
 function processExpense(text) {
+
+  text = text.replace(/এক/g,"1")
+             .replace(/দুই/g,"2")
+             .replace(/তিন/g,"3")
+             .replace(/চার/g,"4")
+             .replace(/পাঁচ/g,"5")
+             .replace(/ছয়/g,"6")
+             .replace(/সাত/g,"7")
+             .replace(/আট/g,"8")
+             .replace(/নয়/g,"9")
+             .replace(/শ/g,"00");
+
   let number = text.match(/\d+/);
-  if (!number) return;
+  if (!number) {
+    document.getElementById("status").innerText = "সংখ্যা বুঝতে পারিনি 😅";
+    return;
+  }
 
   let amount = parseInt(number[0]);
-  let category = text.replace(amount, "").trim();
+  let category = text.replace(number[0], "").trim();
 
   expenses.push({
     amount,
