@@ -103,20 +103,19 @@ function startListening() {
 
 function processExpense(text) {
 
-  text = text.replace(/এক/g,"1")
-             .replace(/দুই/g,"2")
-             .replace(/তিন/g,"3")
-             .replace(/চার/g,"4")
-             .replace(/পাঁচ/g,"5")
-             .replace(/ছয়/g,"6")
-             .replace(/সাত/g,"7")
-             .replace(/আট/g,"8")
-             .replace(/নয়/g,"9")
-             .replace(/শ/g,"00");
+  // বাংলা সংখ্যা → ইংরেজি সংখ্যা কনভার্ট
+  const bnToEn = {
+    '০':'0','১':'1','২':'2','৩':'3','৪':'4',
+    '৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'
+  };
+
+  text = text.replace(/[০-৯]/g, d => bnToEn[d]);
 
   let number = text.match(/\d+/);
+
   if (!number) {
-    document.getElementById("status").innerText = "সংখ্যা বুঝতে পারিনি 😅";
+    document.getElementById("status").innerText =
+      "সংখ্যা বুঝতে পারিনি 😅 (ডিজিটে বলার চেষ্টা করুন)";
     return;
   }
 
@@ -136,6 +135,7 @@ function processExpense(text) {
   document.getElementById("status").innerText =
     "সেভ হয়েছে: " + category + " - " + amount + " টাকা";
 }
+
 
 function renderTable() {
   let table = "<tr><th>ক্যাটাগরি</th><th>টাকা</th><th>X</th></tr>";
