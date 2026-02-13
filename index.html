@@ -1,194 +1,552 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Expense Pro</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Finance Voice Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-primary: #38bdf8;
+            --accent-success: #4ade80;
+            --accent-danger: #f87171;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
 
-<style>
-body{
-  margin:0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
-}
-.container{
-  max-width:600px;
-  margin:auto;
-  padding:15px;
-}
-h2{
-  text-align:center;
-}
-button{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  border-radius:12px;
-  font-size:15px;
-  cursor:pointer;
-}
-.primary{background:#3b82f6;color:white;}
-.success{background:#10b981;color:white;}
-.danger{background:#ef4444;color:white;}
-.card{
-  background:#1e293b;
-  padding:15px;
-  margin-top:15px;
-  border-radius:15px;
-}
-.hidden{display:none;}
-table{width:100%;font-size:14px;}
-th,td{padding:6px;text-align:left;}
-</style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { font-size: 1.5rem; color: var(--accent-primary); }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .card.full-width { grid-column: span 2; border-bottom: 3px solid var(--accent-primary); }
+        .card h3 { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+        .card .amount { font-size: 1.3rem; font-weight: 700; }
+        .income-text { color: var(--accent-success); }
+        .expense-text { color: var(--accent-danger); }
+
+        /* Voice Status */
+        .voice-status {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #64748b;
+            margin-right: 8px;
+        }
+
+        .status-dot.active {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .transcript-preview {
+            font-style: italic;
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            margin-top: 5px;
+        }
+
+        /* Lists */
+        .section-title {
+            margin: 20px 0 10px;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .transaction-list {
+            list-style: none;
+        }
+
+        .transaction-item {
+            background: var(--card-bg);
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .item-info div:first-child { font-weight: 600; }
+        .item-info div:last-child { font-size: 0.75rem; color: var(--text-muted); }
+
+        .btn-delete {
+            background: rgba(248, 113, 113, 0.2);
+            border: none;
+            color: var(--accent-danger);
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            width: 90%;
+            max-width: 500px;
+            z-index: 100;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary { background: var(--accent-primary); color: #000; }
+        .btn-stop { background: var(--accent-danger); color: white; display: none; }
+        .btn-secondary { background: #334155; color: white; }
+
+        /* Report View */
+        #reportOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 1000;
+            padding: 20px;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 16px;
+        }
+
+        .hidden { display: none !important; }
+
+    </style>
 </head>
-
 <body>
+
 <div class="container">
+    <header>
+        <h1>Smart Finance Voice Pro</h1>
+        <p style="color: var(--text-muted); font-size: 0.8rem;">বাংলায় ইনপুট দিন (উদাঃ আলু ৫০ টাকা)</p>
+    </header>
 
-<h2>💸 Smart Expense Pro</h2>
+    <div class="voice-status">
+        <div><span id="statusDot" class="status-dot"></span> <span id="statusLabel">Microphone Off</span></div>
+        <div id="liveTranscript" class="transcript-preview"></div>
+    </div>
 
-<button class="primary" onclick="startListening()">🎤 খরচ বলুন</button>
-<button class="success" onclick="toggleIncome()">💰 ইনকাম যোগ</button>
-<button class="primary" onclick="toggleChart()">📊 চার্ট</button>
+    <div class="summary-grid">
+        <div class="card full-width">
+            <h3>মোট ব্যালেন্স (Net)</h3>
+            <div id="sum-net" class="amount">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>আজকের খরচ</h3>
+            <div id="sum-today" class="amount expense-text">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>আজকের আয়</h3>
+            <div id="sum-income" class="amount income-text">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>সাপ্তাহিক</h3>
+            <div id="sum-week" class="amount">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>মাসিক</h3>
+            <div id="sum-month" class="amount">৳ 0</div>
+        </div>
+    </div>
 
-<h3 id="status"></h3>
+    <div class="section-title">
+        <span>সাম্প্রতিক লেনদেন</span>
+        <button onclick="toggleReports()" style="background:none; border:none; color:var(--accent-primary); cursor:pointer;">সব দেখাও</button>
+    </div>
 
-<div class="card">
-<h3>সর্বশেষ ৫টি খরচ</h3>
-<table id="expenseTable"></table>
+    <ul id="recentList" class="transaction-list">
+        </ul>
 </div>
 
-<div class="card hidden" id="chartSection">
-<h3>পূর্ণ রিপোর্ট</h3>
-<canvas id="expenseChart"></canvas>
-<p id="yearly"></p>
+<div id="reportOverlay">
+    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>বিস্তারিত রিপোর্ট</h2>
+        <button class="btn btn-secondary" onclick="toggleReports()" style="flex:none; padding: 8px 15px;">বন্ধ করুন</button>
+    </div>
+    
+    <div class="summary-grid">
+        <div class="card">
+            <h3>মোট আয়</h3>
+            <div id="rep-income" class="amount income-text">৳ 0</div>
+        </div>
+        <div class="card">
+            <h3>মোট খরচ</h3>
+            <div id="rep-expense" class="amount expense-text">৳ 0</div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+    </div>
+
+    <h3 style="margin-top:20px;">সকল লেনদেন</h3>
+    <ul id="fullList" class="transaction-list" style="margin-top:10px;"></ul>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <button onclick="changePassword()" style="color:var(--text-muted); background:none; border:none; text-decoration: underline;">Change Password</button>
+    </div>
 </div>
 
+<div class="controls">
+    <button id="btnStart" class="btn btn-primary" onclick="startListening()">
+        🎤 স্টার্ট লিসেনিং
+    </button>
+    <button id="btnStop" class="btn btn-stop" onclick="stopListening()">
+        🛑 স্টপ
+    </button>
+    <button class="btn btn-secondary" onclick="toggleReports()">
+        📊 রিপোর্টস
+    </button>
 </div>
 
 <script>
-let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-let income = JSON.parse(localStorage.getItem("income")) || [];
-let chart;
-const deletePassword = "1234";
+    /** * APP STATE & CONFIG 
+     */
+    let transactions = JSON.parse(localStorage.getItem('sfvp_data')) || [];
+    let appPassword = localStorage.getItem('sfvp_pass') || '1234';
+    
+    // Recognition Setup
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let isListening = false;
 
-function saveData(){
-  localStorage.setItem("expenses",JSON.stringify(expenses));
-  localStorage.setItem("income",JSON.stringify(income));
-}
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.lang = 'bn-BD';
+        recognition.interimResults = true;
 
-function startListening(){
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){
-    alert("Chrome ব্যবহার করুন");
-    return;
-  }
-  const recognition = new SpeechRecognition();
-  recognition.lang="bn-BD";
-  recognition.start();
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    processVoiceCommand(event.results[i][0].transcript);
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
+                }
+            }
+            document.getElementById('liveTranscript').innerText = interimTranscript;
+        };
 
-  recognition.onresult=function(event){
-    let text=event.results[0][0].transcript;
-    processExpense(text);
-  };
-}
+        recognition.onend = () => {
+            if (isListening) recognition.start(); // Auto-restart if in continuous mode
+        };
 
-function processExpense(text){
-  const bnToEn={'০':'0','১':'1','২':'2','৩':'3','৪':'4',
-  '৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
-  text=text.replace(/[০-৯]/g,d=>bnToEn[d]);
-  let match=text.match(/\d+/);
-  if(!match){
-    document.getElementById("status").innerText="সংখ্যা বুঝতে পারিনি 😅";
-    return;
-  }
-  let amount=parseInt(match[0]);
-  let category=text.replace(match[0],"").trim();
+        recognition.onerror = (err) => {
+            console.error("Speech Error:", err.error);
+            if(err.error === 'not-allowed') alert("Microphone access denied!");
+        };
+    }
 
-  expenses.unshift({
-    amount,
-    category,
-    date:new Date().toISOString()
-  });
+    /**
+     * VOICE PROCESSING ENGINE
+     */
+    const banglaToEnglishDigits = (str) => {
+        const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return str.replace(/[০-৯]/g, d => bengaliDigits.indexOf(d));
+    };
 
-  saveData();
-  renderTable();
-  renderChart();
-  document.getElementById("status").innerText=
-  "সেভ হয়েছে: "+category+" - "+amount+" টাকা";
-}
+    function processVoiceCommand(text) {
+        console.log("Raw Command:", text);
+        const normalizedText = banglaToEnglishDigits(text);
+        
+        // Command Intent Checks
+        if (text.includes("রিপোর্ট") || text.includes("সব দেখাও")) {
+            toggleReports(true);
+            return;
+        }
+        if (text.includes("উইকলি") || text.includes("সপ্তাহের হিসাব")) {
+            alert("সাপ্তাহিক খরচ: ৳" + calculateTotal('expense', 'week'));
+            return;
+        }
 
-function renderTable(){
-  let latest=expenses.slice(0,5);
-  let table="<tr><th>ক্যাটাগরি</th><th>টাকা</th><th></th></tr>";
-  latest.forEach((item,index)=>{
-    table+=`
-    <tr>
-    <td>${item.category}</td>
-    <td>${item.amount}</td>
-    <td><button class="danger" onclick="deleteExpense(${index})">X</button></td>
-    </tr>`;
-  });
-  document.getElementById("expenseTable").innerHTML=table;
-}
+        // Logic to extract multiple items
+        // Split by markers: 'টাকা', 'এবং', 'আর', comma
+        const parts = normalizedText.split(/(টাকা|এবং|আর|,)/);
+        
+        let currentCategory = "সাধারণ";
+        
+        parts.forEach(part => {
+            const amountMatch = part.match(/\d+/);
+            if (amountMatch) {
+                const amount = parseInt(amountMatch[0]);
+                const type = (normalizedText.includes("ইনকাম") || normalizedText.includes("আয়")) ? 'income' : 'expense';
+                
+                // Extract category: simple logic looks for words before the amount
+                let category = part.replace(/\d+/g, '').replace('টাকা', '').trim();
+                if (!category || category.length < 2) category = "খরচ";
 
-function deleteExpense(index){
-  let pass=prompt("ডিলিট পাসওয়ার্ড দিন:");
-  if(pass===deletePassword){
-    expenses.splice(index,1);
-    saveData();
-    renderTable();
-    renderChart();
-  }else{
-    alert("ভুল পাসওয়ার্ড ❌");
-  }
-}
+                saveTransaction(type, amount, category);
+            }
+        });
+    }
 
-function toggleChart(){
-  let section=document.getElementById("chartSection");
-  section.classList.toggle("hidden");
-}
+    /**
+     * DATA MANAGEMENT
+     */
+    function saveTransaction(type, amount, category) {
+        const now = new Date();
+        const entry = {
+            id: Date.now() + Math.random(),
+            type: type,
+            amount: amount,
+            category: category,
+            date: now.toISOString(),
+            weekNumber: getWeekNumber(now),
+            month: now.getMonth(),
+            year: now.getFullYear()
+        };
 
-function renderChart(){
-  let categories={};
-  expenses.forEach(item=>{
-    categories[item.category]=(categories[item.category]||0)+item.amount;
-  });
-  let labels=Object.keys(categories);
-  let data=Object.values(categories);
-  if(chart) chart.destroy();
-  chart=new Chart(document.getElementById("expenseChart"),{
-    type:'doughnut',
-    data:{labels:labels,datasets:[{data:data}]}
-  });
+        transactions.unshift(entry);
+        localStorage.setItem('sfvp_data', JSON.stringify(transactions));
+        updateUI();
+    }
 
-  let year=new Date().getFullYear();
-  let yearlyTotal=expenses
-    .filter(e=>new Date(e.date).getFullYear()===year)
-    .reduce((sum,i)=>sum+i.amount,0);
+    function deleteTransaction(id) {
+        const pass = prompt("নিরাপত্তার জন্য পাসওয়ার্ড দিন:");
+        if (pass === appPassword) {
+            transactions = transactions.filter(t => t.id !== id);
+            localStorage.setItem('sfvp_data', JSON.stringify(transactions));
+            updateUI();
+        } else {
+            alert("ভুল পাসওয়ার্ড!");
+        }
+    }
 
-  document.getElementById("yearly").innerText=
-  "এই বছরের মোট খরচ: "+yearlyTotal+" টাকা";
-}
+    function changePassword() {
+        const old = prompt("পুরানো পাসওয়ার্ড দিন:");
+        if (old === appPassword) {
+            const newPass = prompt("নতুন পাসওয়ার্ড দিন:");
+            if (newPass) {
+                appPassword = newPass;
+                localStorage.setItem('sfvp_pass', newPass);
+                alert("পাসওয়ার্ড আপডেট হয়েছে!");
+            }
+        }
+    }
 
-function toggleIncome(){
-  let amount=prompt("আজ কত টাকা ইনকাম?");
-  if(amount){
-    income.push({
-      amount:parseInt(amount),
-      date:new Date().toISOString()
-    });
-    saveData();
-    alert("ইনকাম সেভ হয়েছে ✅");
-  }
-}
+    /**
+     * CALCULATION LOGIC
+     */
+    function calculateTotal(type, range = 'all') {
+        const now = new Date();
+        return transactions
+            .filter(t => {
+                if (t.type !== type) return false;
+                const d = new Date(t.date);
+                if (range === 'today') return d.toDateString() === now.toDateString();
+                if (range === 'week') return t.weekNumber === getWeekNumber(now) && t.year === now.getFullYear();
+                if (range === 'month') return t.month === now.getMonth() && t.year === now.getFullYear();
+                if (range === 'year') return t.year === now.getFullYear();
+                return true;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+    }
 
-renderTable();
-renderChart();
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    /**
+     * UI RENDERING
+     */
+    function updateUI() {
+        // Summaries
+        const todayExp = calculateTotal('expense', 'today');
+        const todayInc = calculateTotal('income', 'today');
+        const weekExp = calculateTotal('expense', 'week');
+        const monthExp = calculateTotal('expense', 'month');
+        const totalInc = calculateTotal('income');
+        const totalExp = calculateTotal('expense');
+
+        document.getElementById('sum-today').innerText = `৳ ${todayExp}`;
+        document.getElementById('sum-income').innerText = `৳ ${todayInc}`;
+        document.getElementById('sum-week').innerText = `৳ ${weekExp}`;
+        document.getElementById('sum-month').innerText = `৳ ${monthExp}`;
+        document.getElementById('sum-net').innerText = `৳ ${totalInc - totalExp}`;
+
+        // Recent List (5)
+        renderList(transactions.slice(0, 5), 'recentList');
+        
+        // Report List
+        renderList(transactions, 'fullList');
+
+        // Report Summaries
+        document.getElementById('rep-income').innerText = `৳ ${totalInc}`;
+        document.getElementById('rep-expense').innerText = `৳ ${totalExp}`;
+
+        updateChart();
+    }
+
+    function renderList(data, elementId) {
+        const list = document.getElementById(elementId);
+        list.innerHTML = '';
+        data.forEach(t => {
+            const dateStr = new Date(t.date).toLocaleDateString('bn-BD');
+            const li = document.createElement('li');
+            li.className = 'transaction-item';
+            li.innerHTML = `
+                <div class="item-info">
+                    <div style="color: ${t.type === 'income' ? 'var(--accent-success)' : 'white'}">
+                        ${t.category}: ৳ ${t.amount}
+                    </div>
+                    <div>${dateStr} • ${t.type === 'income' ? 'আয়' : 'খরচ'}</div>
+                </div>
+                <button class="btn-delete" onclick="deleteTransaction(${t.id})">মুছুন</button>
+            `;
+            list.appendChild(li);
+        });
+    }
+
+    /**
+     * CHART LOGIC
+     */
+    let myChart;
+    function updateChart() {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const inc = calculateTotal('income');
+        const exp = calculateTotal('expense');
+
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['আয়', 'খরচ'],
+                datasets: [{
+                    data: [inc, exp],
+                    backgroundColor: ['#4ade80', '#f87171'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                }
+            }
+        });
+    }
+
+    /**
+     * EVENT HANDLERS
+     */
+    function startListening() {
+        if (!recognition) return alert("Speech API not supported in this browser.");
+        isListening = true;
+        recognition.start();
+        document.getElementById('btnStart').style.display = 'none';
+        document.getElementById('btnStop').style.display = 'flex';
+        document.getElementById('statusDot').classList.add('active');
+        document.getElementById('statusLabel').innerText = "Listening...";
+    }
+
+    function stopListening() {
+        isListening = false;
+        recognition.stop();
+        document.getElementById('btnStart').style.display = 'flex';
+        document.getElementById('btnStop').style.display = 'none';
+        document.getElementById('statusDot').classList.remove('active');
+        document.getElementById('statusLabel').innerText = "Microphone Off";
+        document.getElementById('liveTranscript').innerText = "";
+    }
+
+    function toggleReports(forceShow = false) {
+        const overlay = document.getElementById('reportOverlay');
+        if (forceShow) {
+            overlay.style.display = 'block';
+        } else {
+            overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+        }
+        if(overlay.style.display === 'block') updateChart();
+    }
+
+    // Initialize UI on load
+    updateUI();
 </script>
 
 </body>
